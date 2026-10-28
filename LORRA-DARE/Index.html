@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LORRA - Social Challenge Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- PWA Manifest Link -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Midtrans Snap Library (Sandbox Mode) dengan Client Key Anda -->
+    <script type="text/javascript"
+      src="https://app.sandbox.midtrans.com/snap/snap.js"
+      data-client-key="Mid-client-f2nMHFZTd8PzSRT4"></script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #000000; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #262626; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen font-sans antialiased flex flex-col items-center">
+
+    <!-- Container Utama App (Full Hitam Monokrom) -->
+    <div class="w-full max-w-md min-h-screen bg-black border-x border-neutral-900 flex flex-col justify-between shadow-2xl relative">
+        
+        <!-- Header LORRA -->
+        <header class="sticky top-0 z-40 bg-black/90 backdrop-blur-md border-b border-neutral-900 px-4 py-2 flex flex-col gap-1">
+            
+            <!-- Baris Utama: Pencarian & Notifikasi di Kanan, LORRA di Tengah -->
+            <div class="flex items-center justify-between">
+                <div class="w-12"></div>
+
+                <!-- Menu Tengah Vertikal: LORRA & Switch Akun -->
+                <div class="flex flex-col items-center justify-center text-center relative">
+                    <span class="font-black tracking-widest text-white text-base leading-none">LORRA</span>
+                    
+                    <button onclick="toggleAccountSwitcher()" class="flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white mt-0.5 focus:outline-none">
+                        <span id="currentAccountName">Tamu</span>
+                        <svg class="w-3 h-3 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu Bertukar Akun -->
+                    <div id="accountDropdown" class="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl py-1 hidden z-50">
+                        <div class="px-3 py-1.5 text-[10px] text-neutral-500 uppercase tracking-wider border-b border-neutral-800 text-left">Ganti Akun</div>
+                        <button onclick="switchAccount('Alex \'The Hunter\'', '@alex_hunter')" class="w-full text-left px-3 py-2 text-xs text-white hover:bg-neutral-800 flex items-center justify-between">
+                            <span>Alex 'The Hunter'</span>
+                            <span class="text-[10px] text-neutral-500">Utama</span>
+                        </button>
+                        <button onclick="switchAccount('Alex Alternative', '@alex_alt')" class="w-full text-left px-3 py-2 text-xs text-white hover:bg-neutral-800 flex items-center justify-between">
+                            <span>Alex Alternative</span>
+                            <span class="text-[10px] text-neutral-500">Kedua</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bagian Kanan: Pencarian & Notifikasi -->
+                <div class="flex items-center gap-1 w-12 justify-end">
+                    <button onclick="toggleSearchModal()" class="p-1 hover:bg-neutral-900 rounded-full transition text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                    <button onclick="toggleNotificationModal()" class="p-1 hover:bg-neutral-900 rounded-full transition text-white relative">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                        <span id="notifBadge" class="absolute top-1 right-1 w-2 h-2 bg-white rounded-full"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Baris Bawah: Tombol Titik Tiga (Hanya di Tab Profil) -->
+            <div id="headerProfileRow" class="flex justify-end pt-1 pb-0.5 hidden border-t border-neutral-900/50">
+                <button onclick="openProfileSettingsModal()" class="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs text-neutral-300 hover:text-white transition">
+                    <span>Pengaturan Akun</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-5 pb-20" id="mainContainer">
+            
+            <!-- TAB 1: BERANDA -->
+            <div id="tabFeed" class="space-y-4">
+                <div class="bg-neutral-900/60 border border-neutral-800 rounded-xl p-3 space-y-2">
+                    <textarea id="newPostText" placeholder="Apa yang sedang kamu pikirkan? Gunakan @nama atau #tagar" class="w-full bg-transparent text-sm text-white placeholder-neutral-500 focus:outline-none resize-none h-16" maxlength="280"></textarea>
+                    
+                    <div class="flex justify-between items-center pt-2 border-t border-neutral-800">
+                        <span class="text-[10px] text-neutral-500">Maks. 280 Karakter</span>
+                        <button onclick="createNewPost()" class="bg-white hover:bg-neutral-200 text-black text-xs font-bold px-4 py-1.5 rounded-full transition">Kirim Postingan</button>
+                    </div>
+                </div>
+
+                <div id="feedPosts" class="space-y-3"></div>
+            </div>
+
+            <!-- TAB 2: RANK -->
+            <div id="tabRank" class="hidden space-y-4">
+                <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 text-center space-y-1">
+                    <h2 class="font-bold text-sm text-white">🏆 Peringkat (Rank) Kreator</h2>
+                    <p class="text-[11px] text-neutral-400">Kreator yang sukses menyelesaikan tantangan & video paling banyak ditonton.</p>
+                </div>
+                
+                <div id="rankList" class="space-y-3"></div>
+            </div>
+
+            <!-- TAB 3: PESAN / DM -->
+            <div id="tabMessages" class="hidden space-y-4">
+                <div class="flex border-b border-neutral-800 text-xs font-bold">
+                    <button onclick="switchMessageCategory('main')" id="msgTabMain" class="flex-1 py-2 text-center border-b-2 border-white text-white">
+                        Pesan Utama
+                    </button>
+                    <button onclick="switchMessageCategory('request')" id="msgTabRequest" class="flex-1 py-2 text-center border-b-2 border-transparent text-neutral-500 hover:text-white">
+                        Permintaan Pesan <span class="bg-neutral-800 text-[10px] px-1.5 py-0.2 rounded-full ml-1" id="reqBadgeCount">1</span>
+                    </button>
+                </div>
+
+                <p class="text-[10px] text-neutral-500 text-center">💡 Tekan & tahan pada pesan untuk opsi hapus atau blokir.</p>
+
+                <div id="messageList" class="space-y-2"></div>
+            </div>
+
+            <!-- TAB 4: PROFIL KREATOR -->
+            <div id="tabProfile" class="hidden space-y-4">
+                <div class="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-4 text-center relative overflow-hidden space-y-3">
+                    
+                    <!-- Dompet Saldo Pengguna -->
+                    <div class="bg-black border border-neutral-800 rounded-xl p-3 flex items-center justify-between">
+                        <div class="text-left">
+                            <span class="block text-[10px] text-neutral-400">Saldo Dompet Saya</span>
+                            <span id="userWallet" class="text-sm font-bold text-white">Rp 50.000</span>
+                        </div>
+                        <button onclick="openTopUpModal()" class="bg-white hover:bg-neutral-200 text-black text-xs font-bold px-3 py-1.5 rounded-lg transition">+ Topup Saldo</button>
+                    </div>
+
+                    <!-- Avatar & Info Akun yang bisa diklik -->
+                    <div class="w-20 h-20 rounded-full bg-neutral-800 mx-auto border-2 border-white p-0.5 relative cursor-pointer" onclick="triggerPhotoUpload()" title="Ketuk untuk ganti foto dari HP">
+                        <img id="profileAvatarImg" src="https://api.dicebear.com/7.x/avataaars/svg?seed=LorraUser" alt="Avatar" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <!-- Input file tersembunyi untuk ambil gambar dari galeri HP -->
+                    <input type="file" id="profileImageInput" accept="image/*" class="hidden" onchange="handlePhotoSelected(event)">
+                    
+                    <div class="mt-2 flex items-center justify-center gap-1.5">
+                        <h2 id="profileNameDisplay" class="font-bold text-lg text-white">Alex 'The Hunter'</h2>
+                        <span class="inline-flex items-center gap-1 bg-neutral-800 border border-neutral-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            🏆 The Most Dare Hunter
+                        </span>
+                    </div>
+                    
+                    <p id="profileHandleDisplay" class="text-xs text-neutral-400 mt-0.5">@alex_hunter • Kreator Tantangan Ekstrem</p>
+                    
+                    <!-- Statistik Pengikut & Pendapatan -->
+                    <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-neutral-800 text-xs">
+                        <div onclick="openFollowListModal('followers')" class="cursor-pointer hover:opacity-85 transition">
+                            <span class="block font-bold text-white" id="profileFollowersCount">105.4K</span>
+                            <span class="text-[10px] text-neutral-400 underline">Pengikut</span>
+                        </div>
+                        <div onclick="openFollowListModal('following')" class="cursor-pointer hover:opacity-85 transition border-x border-neutral-800">
+                            <span class="block font-bold text-white" id="profileFollowingCount">312</span>
+                            <span class="text-[10px] text-neutral-400 underline">Mengikuti</span>
+                        </div>
+                        <div id="privateEarningsContainer" class="relative">
+                            <span class="block font-bold text-emerald-400" id="creatorBalance">Rp 3.600.000</span>
+                            <span class="text-[10px] text-neutral-400">Pendapatan (60%)</span>
+                            <button onclick="openWithdrawModal()" class="mt-1 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white text-[9px] font-bold px-2 py-0.5 rounded transition">
+                                💸 Withdraw
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onclick="openChallengeModal()" class="w-full bg-white hover:bg-neutral-200 text-black font-bold py-2 rounded-xl text-xs shadow-lg transition">
+                        🔥 Buat / Beri Tantangan ke Kreator Ini
+                    </button>
+                </div>
+
+                <!-- Kolom Dare / Tantangan Aktif -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">🎯 Kolom Dare & Tantangan Aktif</h3>
+                        <span class="text-[10px] text-neutral-500">Aturan 7 Hari / 60:40</span>
+                    </div>
+                    <div id="profileChallengeList" class="space-y-3"></div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Navbar Bawah -->
+        <nav class="sticky bottom-0 z-40 bg-black/95 backdrop-blur-md border-t border-neutral-900 px-6 py-3 flex justify-between items-center">
+            <button onclick="switchTab('feed')" id="navFeed" class="flex flex-col items-center text-white transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+            </button>
+            <button onclick="switchTab('rank')" id="navRank" class="flex flex-col items-center text-neutral-500 hover:text-white transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </button>
+            <button onclick="switchTab('messages')" id="navMessages" class="flex flex-col items-center text-neutral-500 hover:text-white transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+            </button>
+            <button onclick="switchTab('profile')" id="navProfile" class="flex flex-col items-center text-neutral-500 hover:text-white transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- MODAL AUTHENTICATION -->
+    <div id="authModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl">
+            <div class="text-center space-y-1">
+                <h2 class="text-xl font-black tracking-widest text-white">LORRA</h2>
+                <p id="authSubtitle" class="text-xs text-neutral-400">Masuk ke akun Anda untuk mulai tantangan</p>
+            </div>
+
+            <div id="authErrorMessage" class="hidden text-[11px] bg-red-950/80 border border-red-800 text-red-300 p-2.5 rounded-xl text-center"></div>
+
+            <div class="space-y-3">
+                <div id="displayNameContainer" class="hidden">
+                    <label class="block text-[11px] text-neutral-400 mb-1">Nama Lengkap</label>
+                    <input type="text" id="authDisplayName" placeholder="Contoh: Alex Hunter" class="w-full bg-black border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-neutral-600">
+                </div>
+                <div>
+                    <label class="block text-[11px] text-neutral-400 mb-1">Email</label>
+                    <input type="email" id="authEmail" placeholder="nama@email.com" class="w-full bg-black border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-neutral-600">
+                </div>
+                <div>
+                    <label class="block text-[11px] text-neutral-400 mb-1">Kata Sandi</label>
+                    <input type="password" id="authPassword" placeholder="••••••••" class="w-full bg-black border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-neutral-600">
+                </div>
+            </div>
+
+            <button id="authPrimaryBtn" onclick="handleAuthSubmit()" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-xs hover:bg-neutral-200 transition">
+                Masuk ke LORRA
+            </button>
+
+            <div class="text-center pt-2 border-t border-neutral-800">
+                <p class="text-[11px] text-neutral-400">
+                    <span id="authToggleText">Belum punya akun?</span>
+                    <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-white font-bold underline ml-1">Daftar Akun Baru</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEMUA MODAL POP-UP LAINNYA -->
+    <div id="followListModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-3 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 id="followListTitle" class="font-bold text-sm text-white">Daftar Pengguna</h3>
+                <button onclick="closeFollowListModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div id="followListContainer" class="flex-1 overflow-y-auto space-y-2 py-1"></div>
+        </div>
+    </div>
+
+    <div id="profileSettingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-4 space-y-2">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2 mb-2">
+                <h3 class="font-bold text-sm text-white">⚙️ Pengaturan & Privasi Akun</h3>
+                <button onclick="closeProfileSettingsModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <button onclick="openPersonalDataModal()" class="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-neutral-800 rounded-xl flex items-center gap-3">👤 Data Pribadi Akun</button>
+            <button onclick="openBlockedUsersModal()" class="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-neutral-800 rounded-xl flex items-center gap-3">🚫 Akun yang Diblokir</button>
+            <button onclick="openDashboardModal()" class="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-neutral-800 rounded-xl flex items-center gap-3">📊 Dasbor (Analitik Video & Pendapatan)</button>
+            <button onclick="openInviteModal()" class="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-neutral-800 rounded-xl flex items-center gap-3">🎁 Undang Teman</button>
+            <button onclick="logoutAccount()" class="w-full text-left px-3 py-2.5 text-xs text-red-500 hover:bg-neutral-800 rounded-xl flex items-center gap-3 border-t border-neutral-800 mt-2">🚪 Keluar dari Akun (Logout)</button>
+        </div>
+    </div>
+
+    <div id="personalDataModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-3 text-xs">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-white">📄 Data Pribadi Akun</h3>
+                <button onclick="closePersonalDataModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div class="space-y-2 text-neutral-300">
+                <p><b>Nama Akun:</b> <span id="dataName">Alex 'The Hunter'</span></p>
+                <p><b>Username:</b> <span id="dataHandle">@alex_hunter</span></p>
+                <p><b>Email Terdaftar:</b> alex.hunter@lorra.app</p>
+                <p><b>Nomor Telepon:</b> +62 812-3456-7890</p>
+                <p><b>Tanggal Bergabung:</b> Oktober 2026</p>
+            </div>
+            <button onclick="closePersonalDataModal()" class="w-full bg-white text-black font-bold py-1.5 rounded-lg mt-2">Tutup</button>
+        </div>
+    </div>
+
+    <div id="blockedUsersModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-3 text-xs">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-white">🚫 Daftar Akun Diblokir</h3>
+                <button onclick="closeBlockedUsersModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div id="blockedUsersList" class="space-y-2">
+                <div class="flex justify-between items-center bg-black p-2 rounded-lg border border-neutral-800">
+                    <span>@spam_bot_99</span>
+                    <button onclick="alert('Blokir dibuka!')" class="bg-neutral-800 hover:bg-neutral-700 px-2 py-1 rounded text-[10px]">Buka Blokir</button>
+                </div>
+            </div>
+            <button onclick="closeBlockedUsersModal()" class="w-full bg-white text-black font-bold py-1.5 rounded-lg">Tutup</button>
+        </div>
+    </div>
+
+    <div id="dashboardModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-3 text-xs">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-white">📊 Dasbor Kreator (Analitik & Pendapatan)</h3>
+                <button onclick="closeDashboardModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div class="space-y-2 bg-black p-3 rounded-xl border border-neutral-800">
+                <p class="text-neutral-400">Total Penonton Video Bukti:</p>
+                <p class="text-base font-bold text-white">12.450 Penonton 👁️</p>
+                <hr class="border-neutral-800 my-2">
+                <p class="text-neutral-400">Total Pendapatan Bersih (60%):</p>
+                <p class="text-base font-bold text-emerald-400">Rp 3.600.000 💰</p>
+            </div>
+            <button onclick="closeDashboardModal()" class="w-full bg-white text-black font-bold py-1.5 rounded-lg">Tutup</button>
+        </div>
+    </div>
+
+    <div id="inviteModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-3 text-xs text-center">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-white">🎁 Undang Teman ke LORRA</h3>
+                <button onclick="closeInviteModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <p class="text-neutral-300">Bagikan tautan referensi ini ke temanmu dan dapatkan bonus saldo!</p>
+            <input type="text" value="https://lorra.app/ref/alex_hunter" readonly class="w-full bg-black border border-neutral-800 text-center text-neutral-400 p-2 rounded-lg">
+            <button onclick="alert('Link referral berhasil disalin!'); closeInviteModal();" class="w-full bg-white text-black font-bold py-2 rounded-lg">Salin Link Referensi</button>
+        </div>
+    </div>
+
+    <div id="topUpModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-4">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-sm text-white">💳 Top Up Saldo Dompet (Midtrans)</h3>
+                <button onclick="closeTopUpModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div>
+                <label class="block text-xs text-neutral-400 mb-1">Nominal Deposit (Min. Rp 20.000)</label>
+                <input type="number" id="topUpAmountInput" value="20000" min="20000" step="5000" class="w-full bg-black border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none">
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-neutral-800">
+                <button onclick="closeTopUpModal()" class="px-3 py-1.5 rounded-lg text-xs text-neutral-400 hover:bg-neutral-800">Batal</button>
+                <button onclick="processTopUp()" class="px-4 py-1.5 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200">Bayar dengan Midtrans</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdrawModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-4">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-sm text-white">💸 Penarikan Pendapatan (WD)</h3>
+                <button onclick="closeWithdrawModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Rekening Terverifikasi</label>
+                    <input type="text" value="BCA - 8830192831 (a.n. Alex)" disabled class="w-full bg-neutral-950 border border-neutral-800 text-neutral-400 rounded-xl p-2 text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Nominal WD (Maks. Rp 50.000 per transaksi)</label>
+                    <input type="number" id="withdrawAmountInput" value="50000" max="50000" min="10000" class="w-full bg-black border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-neutral-800">
+                <button onclick="closeWithdrawModal()" class="px-3 py-1.5 rounded-lg text-xs text-neutral-400 hover:bg-neutral-800">Batal</button>
+                <button onclick="processWithdraw()" class="px-4 py-1.5 bg-emerald-400 text-black rounded-lg text-xs font-bold hover:bg-emerald-300">Cairkan Dana</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="acceptChallengeModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-4">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-sm text-white">🎯 Terima Tantangan & Tentukan Target Harga</h3>
+                <button onclick="closeAcceptChallengeModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div class="space-y-3">
+                <p id="acceptChallengeText" class="text-xs text-neutral-300 italic bg-black p-2.5 rounded-xl border border-neutral-800"></p>
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Tentukan Target Dana Kamu (IDR)</label>
+                    <input type="number" id="creatorTargetPriceInput" placeholder="100000" step="10000" class="w-full bg-black border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-neutral-800">
+                <button onclick="closeAcceptChallengeModal()" class="px-3 py-1.5 rounded-lg text-xs text-neutral-400 hover:bg-neutral-800">Batal</button>
+                <button onclick="confirmAcceptChallenge()" class="px-4 py-1.5 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200">Terima & Posting ke Feed</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-16 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-3">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-sm text-white">Cari di LORRA</h3>
+                <button onclick="toggleSearchModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Ketik kata kunci atau @nama..." class="w-full bg-black border border-neutral-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+        </div>
+    </div>
+
+    <div id="notificationModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-16 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-3 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-sm text-white">🔔 Pemberitahuan</h3>
+                <button onclick="toggleNotificationModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div id="notificationList" class="flex-1 overflow-y-auto space-y-2 py-1"></div>
+        </div>
+    </div>
+
+    <div id="challengeModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-4">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-sm text-white">🎯 Beri Tantangan ke Kreator</h3>
+                <button onclick="closeChallengeModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Deskripsi Tantangan</label>
+                    <textarea id="challengeInput" placeholder="Contoh: Makan mie pedas level 100!" class="w-full bg-black border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none h-20 resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Dukungan Awal Kamu (Min. Rp 10.000)</label>
+                    <input type="number" id="initialDonationInput" value="10000" min="10000" class="w-full bg-black border border-neutral-800 rounded-xl p-2 text-xs text-white">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-neutral-800">
+                <button onclick="closeChallengeModal()" class="px-3 py-1.5 rounded-lg text-xs text-neutral-400 hover:bg-neutral-800">Batal</button>
+                <button onclick="submitChallengeFromProfile()" class="px-4 py-1.5 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200">Kirim Tantangan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="donateModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-4">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-sm text-white">🗳️ Vote / Berikan Dukungan (Tanpa Batas)</h3>
+                <button onclick="closeDonateModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div>
+                <p id="donateChallengeTitle" class="text-xs text-neutral-300 font-medium mb-3"></p>
+                <label class="block text-xs text-neutral-400 mb-1">Nominal Dukungan (Min. Rp 1.000)</label>
+                <input type="number" id="donateAmountInput" value="10000" min="1000" step="1000" class="w-full bg-black border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none">
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-neutral-800">
+                <button onclick="closeDonateModal()" class="px-3 py-1.5 rounded-lg text-xs text-neutral-400 hover:bg-neutral-800">Batal</button>
+                <button onclick="processDonation()" class="px-4 py-1.5 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200">Kirim Vote</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-2xl p-4 space-y-4">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-sm text-white">Unggah Bukti Video Tantangan</h3>
+                <button onclick="closeUploadModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[11px] text-white bg-neutral-800 border border-neutral-700 p-2 rounded-lg">
+                    ✅ Target donasi tercapai! Silakan unggah video bukti.
+                </p>
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Link URL Video Bukti</label>
+                    <input type="text" id="videoUrlInput" value="https://assets.mixkit.co/videos/preview/mixkit-eating-a-slice-of-pizza-42861-large.mp4" class="w-full bg-black border border-neutral-800 rounded-xl p-2 text-xs text-white">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-neutral-800">
+                <button onclick="closeUploadModal()" class="px-3 py-1.5 rounded-lg text-xs text-neutral-400 hover:bg-neutral-800">Batal</button>
+                <button onclick="submitVideoProof()" class="px-4 py-1.5 bg-white text-black rounded-lg text-xs font-bold hover:bg-neutral-200">Verifikasi & Cairkan (60:40)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="commentModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+        <div class="bg-neutral-900 border border-neutral-800 w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-4 space-y-3 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h3 class="font-bold text-sm text-white">Komentar</h3>
+                <button onclick="closeCommentModal()" class="text-neutral-400 hover:text-white">&times;</button>
+            </div>
+            <div id="commentList" class="flex-1 overflow-y-auto space-y-2 py-1"></div>
+            <div class="flex gap-2 pt-2 border-t border-neutral-800">
+                <input type="text" id="commentInput" placeholder="Tulis komentar..." class="flex-1 bg-black border border-neutral-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                <button onclick="submitComment()" class="bg-white text-black px-3 py-2 rounded-xl text-xs font-bold hover:bg-neutral-200">Kirim</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE & LOGIKA APLIKASI LENGKAP -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDvyEPML--DLOOC5RZa_IJk0AOrpCu1w-s",
+            authDomain: "lorra-app-database.firebaseapp.com",
+            projectId: "lorra-app-database",
+            storageBucket: "lorra-app-database.firebasestorage.app",
+            messagingSenderId: "984827863227",
+            appId: "1:984827863227:web:7ce6a12b28fab09d32499e",
+            measurementId: "G-ZW4H1Q6SVW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        setPersistence(auth, browserSessionPersistence).catch((error) => {
+            console.error("Gagal mengatur persistence auth:", error);
+        });
+
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+
+        let isSignUpMode = false;
+
+        onAuthStateChanged(auth, async (user) => {
+            const authModal = document.getElementById('authModal');
+            const accountNameEl = document.getElementById('currentAccountName');
+
+            if (user) {
+                if (authModal) authModal.classList.add('hidden');
+                const name = user.displayName || user.email.split('@')[0];
+                if (accountNameEl) accountNameEl.innerText = name;
+            } else {
+                if (accountNameEl) accountNameEl.innerText = "Tamu";
+                if (authModal) {
+                    authModal.classList.remove('hidden');
+                }
+            }
+        });
+
+        window.toggleAuthMode = function() {
+            isSignUpMode = !isSignUpMode;
+            const title = document.getElementById('authSubtitle');
+            const primaryBtn = document.getElementById('authPrimaryBtn');
+            const toggleBtn = document.getElementById('authToggleBtn');
+            const toggleText = document.getElementById('authToggleText');
+            const nameContainer = document.getElementById('displayNameContainer');
+
+            if (isSignUpMode) {
+                title.innerText = "Daftar akun LORRA baru gratis";
+                primaryBtn.innerText = "Daftar Akun Baru";
+                toggleText.innerText = "Sudah punya akun?";
+                toggleBtn.innerText = "Masuk di sini";
+                nameContainer.classList.remove('hidden');
+            } else {
+                title.innerText = "Masuk ke akun Anda untuk mulai tantangan";
+                primaryBtn.innerText = "Masuk ke LORRA";
+                toggleText.innerText = "Belum punya akun?";
+                toggleBtn.innerText = "Daftar Akun Baru";
+                nameContainer.classList.add('hidden');
+            }
+        };
+
+        // Fungsi Login & Register (Tanpa Alert Pop-up)
+        window.handleAuthSubmit = async function() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const displayName = document.getElementById('authDisplayName').value;
+            const errDiv = document.getElementById('authErrorMessage');
+            errDiv.classList.add('hidden');
+
+            try {
+                if (isSignUpMode) {
+                    if (!displayName.trim()) throw new Error("Nama lengkap wajib diisi!");
+                    const res = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(res.user, { displayName: displayName });
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (err) {
+                errDiv.innerText = err.message.replace("Firebase: ", "");
+                errDiv.classList.remove('hidden');
+            }
+        };
+
+        // Fungsi Logout Bersih (Tanpa Alert Pop-up, langsung kembali ke halaman login)
+        window.logoutAccount = async function() {
+            try {
+                // 1. Tutup modal pengaturan profil
+                const settingsModal = document.getElementById('profileSettingsModal');
+                if (settingsModal) settingsModal.classList.add('hidden');
+
+                // 2. Paksa langsung tampilkan modal login
+                const authModal = document.getElementById('authModal');
+                if (authModal) {
+                    authModal.classList.remove('hidden');
+                }
+
+                // 3. Proses keluar Firebase
+                await signOut(auth);
+            } catch (err) {
+                console.error("Gagal melakukan logout: ", err.message);
+            }
+        };
+
+        window.triggerPhotoUpload = function() {
+            const fileInput = document.getElementById('profileImageInput');
+            if (fileInput) fileInput.click();
+        };
+
+        window.handlePhotoSelected = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    alert("⚠️ Ukuran foto terlalu besar! Maksimal 2MB.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarImg = document.getElementById('profileAvatarImg');
+                    if (avatarImg) {
+                        avatarImg.src = e.target.result;
+                        alert("✅ Foto profil berhasil diganti dari perangkat Anda!");
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    </script>
+
+    <!-- LOGIKA APLIKASI UTAMA -->
+    <script>
+        let userBalance = 50000;
+        let creatorBalance = 360000;
+        let activeChallengeIdForDonation = null;
+        let activeChallengeIdForUpload = null;
+        let activeChallengeIdForAccept = null;
+        let activePostIdForComment = null;
+
+        let currentActiveAccount = "Alex 'The Hunter'";
+        let currentActiveHandle = "@alex_hunter";
+        let isOwnerView = true;
+
+        let activeMessageCategory = "main";
+
+        let followingUsers = ["@siti_r", "@budi_s", "@rian_ekstrem"];
+        let followersList = [
+            { name: "Siti Rahma", username: "@siti_r", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=SitiRahma" },
+            { name: "Rian Ekstrem", username: "@rian_ekstrem", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=RianEkstrem" },
+            { name: "Joko Game", username: "@joko_game", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Joko" }
+        ];
+        let followingList = [
+            { name: "Siti Rahma", username: "@siti_r", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=SitiRahma" },
+            { name: "Budi Santoso", username: "@budi_s", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Budi" }
+        ];
+
+        let messagesData = [
+            { id: 1, sender: "Siti Rahma", username: "@siti_r", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=SitiRahma", isMutual: true, lastMessage: "Halo bang Alex, tantangan berikutnya kapan tayang?", time: "10m lalu" }
+        ];
+
+        let notifications = [
+            { id: 1, type: "system", text: "⚠️ Sistem LORRA: Peringatan! Selesaikan tantangan dalam 7 hari agar dana tidak dialihkan.", time: "Baru saja" },
+            { id: 2, type: "post", text: "📢 Siti Rahma (@siti_r) yang kamu ikuti baru saja memposting sesuatu!", time: "15m lalu" }
+        ];
+
+        let textPosts = [
+            {
+                id: 301,
+                author: "Siti Rahma",
+                username: "@siti_r",
+                badge: null,
+                time: "Kemarin",
+                content: "Halo @alex_hunter, semangat terus buat konten-konten ekstremnya di LORRA! #TheMostDareHunter #LorraUpdate",
+                likes: 45,
+                isLiked: false,
+                comments: [
+                    { author: "Budi Santoso", text: "Setuju banget mbak Siti!" }
+                ]
+            },
+            {
+                id: 302,
+                author: "Budi Santoso",
+                username: "@budi_s",
+                badge: null,
+                time: "2 hari lalu",
+                content: "Platform medsos teks paling unik karena ada fitur DARE berbayarnya. Mantap banget! #StartUpLokal",
+                likes: 12,
+                isLiked: false,
+                comments: []
+            }
+        ];
+
+        let profileChallenges = [
+            {
+                id: 1,
+                author: "Alex 'The Hunter'",
+                content: "🔥 Tantangan: Makan Mie Pedas Level 100 tanpa minum selama 15 menit!",
+                target: 500000,
+                current: 500000,
+                votes: 125,
+                status: "COMPLETED",
+                videoViews: 1420,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-eating-a-slice-of-pizza-42861-large.mp4"
+            },
+            {
+                id: 2,
+                author: "Alex 'The Hunter'",
+                content: "🔥 Tantangan: Lari Marathon 10KM pakai kostum Batman di pusat kota!",
+                target: 1000000,
+                current: 450000,
+                votes: 90,
+                status: "PENDING_ACCEPT",
+                videoViews: 0,
+                videoUrl: null
+            }
+        ];
+
+        function formatIDR(val) { return "Rp " + val.toLocaleString('id-ID'); }
+        function updateWalletUI() {
+            const walletEl = document.getElementById('userWallet');
+            if(walletEl) walletEl.innerText = formatIDR(userBalance);
+        }
+
+        function openFollowListModal(type) {
+            const titleEl = document.getElementById('followListTitle');
+            const container = document.getElementById('followListContainer');
+            const data = type === 'followers' ? followersList : followingList;
+
+            titleEl.innerText = type === 'followers' ? '👥 Daftar Pengikut (Followers)' : '👤 Daftar Mengikuti (Following)';
+            
+            container.innerHTML = data.map(user => `
+                <div class="bg-black p-2.5 rounded-xl border border-neutral-800 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <img src="${user.avatar}" class="w-9 h-9 rounded-full bg-neutral-800">
+                        <div>
+                            <span class="font-bold text-xs text-white block">${user.name}</span>
+                            <span class="text-[10px] text-neutral-400">${user.username}</span>
+                        </div>
+                    </div>
+                    <button onclick="alert('Aksi berhasil untuk ${user.username}')" class="bg-neutral-800 hover:bg-neutral-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                        ${type === 'followers' ? 'Hapus' : 'Mengikuti'}
+                    </button>
+                </div>
+            `).join('');
+
+            document.getElementById('followListModal').classList.remove('hidden');
+        }
+        function closeFollowListModal() { document.getElementById('followListModal').classList.add('hidden'); }
+
+        function openProfileSettingsModal() { document.getElementById('profileSettingsModal').classList.remove('hidden'); }
+        function closeProfileSettingsModal() { document.getElementById('profileSettingsModal').classList.add('hidden'); }
+
+        function openPersonalDataModal() { closeProfileSettingsModal(); document.getElementById('personalDataModal').classList.remove('hidden'); }
+        function closePersonalDataModal() { document.getElementById('personalDataModal').classList.add('hidden'); }
+
+        function openBlockedUsersModal() { closeProfileSettingsModal(); document.getElementById('blockedUsersModal').classList.remove('hidden'); }
+        function closeBlockedUsersModal() { document.getElementById('blockedUsersModal').classList.add('hidden'); }
+
+        function openDashboardModal() { closeProfileSettingsModal(); document.getElementById('dashboardModal').classList.remove('hidden'); }
+        function closeDashboardModal() { document.getElementById('dashboardModal').classList.add('hidden'); }
+
+        function openInviteModal() { closeProfileSettingsModal(); document.getElementById('inviteModal').classList.remove('hidden'); }
+        function closeInviteModal() { document.getElementById('inviteModal').classList.add('hidden'); }
+
+        function openTopUpModal() { document.getElementById('topUpModal').classList.remove('hidden'); }
+        function closeTopUpModal() { document.getElementById('topUpModal').classList.add('hidden'); }
+
+        function processTopUp() {
+            const amount = parseInt(document.getElementById('topUpAmountInput').value);
+            if(isNaN(amount) || amount < 20000) return alert("⚠️ Minimal Deposit/Top Up adalah Rp 20.000!");
+
+            const orderId = 'LORRA-TOPUP-' + Date.now();
+            const userConfirm = confirm(
+                `💳 [MIDTRANS SANDBOX PAYMENT]\n\n` +
+                `Order ID: ${orderId}\n` +
+                `Nominal Top Up: ${formatIDR(amount)}\n` +
+                `Pilihan Metode: QRIS / GoPay / Virtual Account BCA\n\n` +
+                `Klik OK untuk mensimulasikan Pembayaran SUKSES!`
+            );
+
+            if (userConfirm) {
+                userBalance += amount;
+                updateWalletUI();
+                closeTopUpModal();
+                alert(`✅ [Midtrans Success] Pembayaran sebesar ${formatIDR(amount)} BERHASIL!\n\nSaldo dompet LORRA Anda sekarang: ${formatIDR(userBalance)}`);
+            } else {
+                alert("❌ Transaksi dibatalkan oleh pengguna.");
+            }
+        }
+
+        function openWithdrawModal() { document.getElementById('withdrawModal').classList.remove('hidden'); }
+        function closeWithdrawModal() { document.getElementById('withdrawModal').classList.add('hidden'); }
+        function processWithdraw() {
+            const amount = parseInt(document.getElementById('withdrawAmountInput').value);
+            if(isNaN(amount) || amount > 50000) return alert("⚠️ Maksimal penarikan dana per transaksi adalah Rp 50.000!");
+            if(creatorBalance < amount) return alert("⚠️ Saldo pendapatan kamu tidak mencukupi!");
+            creatorBalance -= amount;
+            document.getElementById('creatorBalance').innerText = formatIDR(creatorBalance);
+            closeWithdrawModal();
+            alert(`💸 Penarikan ${formatIDR(amount)} berhasil diproses ke rekening terverifikasi!`);
+        }
+
+        function toggleSearchModal() { document.getElementById('searchModal').classList.toggle('hidden'); }
+        function toggleNotificationModal() {
+            document.getElementById('notificationModal').classList.toggle('hidden');
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notificationList');
+            container.innerHTML = notifications.map(n => `
+                <div class="bg-black p-3 rounded-xl border border-neutral-800 space-y-1">
+                    <p class="text-xs text-white leading-snug">${n.text}</p>
+                    <span class="text-[10px] text-neutral-500">${n.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleAccountSwitcher() { document.getElementById('accountDropdown').classList.toggle('hidden'); }
+
+        function switchAccount(name, handle) {
+            currentActiveAccount = name;
+            currentActiveHandle = handle;
+            isOwnerView = true;
+            document.getElementById('currentAccountName').innerText = name;
+            document.getElementById('profileNameDisplay').innerText = name;
+            document.getElementById('profileHandleDisplay').innerText = handle + " • Kreator Tantangan Ekstrem";
+            document.getElementById('dataName').innerText = name;
+            document.getElementById('dataHandle').innerText = handle;
+            document.getElementById('privateEarningsContainer').style.display = "block";
+            toggleAccountSwitcher();
+            alert(`Berhasil beralih ke akun: ${name}`);
+        }
+
+        function switchTab(tab) {
+            const tabFeed = document.getElementById('tabFeed');
+            const tabRank = document.getElementById('tabRank');
+            const tabMessages = document.getElementById('tabMessages');
+            const tabProfile = document.getElementById('tabProfile');
+            
+            const navFeed = document.getElementById('navFeed');
+            const navRank = document.getElementById('navRank');
+            const navMessages = document.getElementById('navMessages');
+            const navProfile = document.getElementById('navProfile');
+            const headerProfileRow = document.getElementById('headerProfileRow');
+
+            tabFeed.classList.add('hidden');
+            tabRank.classList.add('hidden');
+            tabMessages.classList.add('hidden');
+            tabProfile.classList.add('hidden');
+            headerProfileRow.classList.add('hidden');
+
+            navFeed.className = "flex flex-col items-center text-neutral-500 hover:text-white transition";
+            navRank.className = "flex flex-col items-center text-neutral-500 hover:text-white transition";
+            navMessages.className = "flex flex-col items-center text-neutral-500 hover:text-white transition";
+            navProfile.className = "flex flex-col items-center text-neutral-500 hover:text-white transition";
+
+            if (tab === 'feed') {
+                tabFeed.classList.remove('hidden');
+                navFeed.className = "flex flex-col items-center text-white transition";
+                renderFeed(textPosts);
+            } else if (tab === 'rank') {
+                tabRank.classList.remove('hidden');
+                navRank.className = "flex flex-col items-center text-white transition";
+                renderRankList();
+            } else if (tab === 'messages') {
+                tabMessages.classList.remove('hidden');
+                navMessages.className = "flex flex-col items-center text-white transition";
+                renderMessages();
+            } else {
+                tabProfile.classList.remove('hidden');
+                navProfile.className = "flex flex-col items-center text-white transition";
+                headerProfileRow.classList.remove('hidden');
+                updateWalletUI();
+                renderProfileChallenges();
+            }
+        }
+
+        function handleSearch(keyword) {
+            toggleSearchModal();
+            switchTab('feed');
+            const query = keyword.toLowerCase().trim();
+            if(!query) { renderFeed(textPosts); return; }
+            const filtered = textPosts.filter(p => p.author.toLowerCase().includes(query) || p.content.toLowerCase().includes(query));
+            renderFeed(filtered);
+        }
+
+        function formatPostText(text) {
+            return text
+                .replace(/(@\w+)/g, '<span class="text-white font-bold underline cursor-pointer">$1</span>')
+                .replace(/(#\w+)/g, '<span class="text-white font-bold cursor-pointer">$1</span>');
+        }
+
+        function renderFeed(dataList) {
+            const container = document.getElementById('feedPosts');
+            if(dataList.length === 0) {
+                container.innerHTML = `<p class="text-xs text-neutral-500 text-center py-8">Tidak ada postingan ditemukan.</p>`;
+                return;
+            }
+
+            container.innerHTML = dataList.map(post => {
+                const isChallengePost = post.isChallenge;
+                const percent = isChallengePost ? Math.min(100, Math.floor((post.challengeCurrent / post.challengeTarget) * 100)) : 0;
+
+                return `
+                    <div class="bg-neutral-900/40 border border-neutral-800 rounded-xl p-3.5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center font-bold text-xs text-white">
+                                    ${post.author.charAt(0)}
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="font-bold text-xs text-white">${post.author}</span>
+                                        ${isChallengePost ? `<span class="text-[9px] bg-amber-500 text-black px-1.5 py-0.2 rounded font-bold">🎯 TANTANGAN DITERIMA</span>` : ''}
+                                    </div>
+                                    <span class="text-[10px] text-neutral-500">${post.username} • ${post.time}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-white leading-relaxed">${formatPostText(post.content)}</p>
+
+                        ${isChallengePost ? `
+                            <div class="bg-black/60 border border-neutral-800 p-3 rounded-xl space-y-2">
+                                <div class="flex justify-between items-center text-[11px]">
+                                    <span class="text-neutral-400">Terkumpul: <b class="text-white">${formatIDR(post.challengeCurrent)}</b></span>
+                                    <span class="text-neutral-400">Target: <b class="text-white">${formatIDR(post.challengeTarget)}</b></span>
+                                </div>
+                                <div class="w-full bg-neutral-900 h-2 rounded-full overflow-hidden border border-neutral-800">
+                                    <div class="bg-white h-full transition-all" style="width: ${percent}%"></div>
+                                </div>
+                                <button onclick="openDonateModal(${post.challengeId})" class="w-full bg-white hover:bg-neutral-200 text-black font-bold text-xs py-1.5 rounded-lg mt-1 transition">
+                                    🗳️ Vote & Berikan Dukungan (Tanpa Batas Nominal)
+                                </button>
+                            </div>
+                        ` : ''}
+
+                        <div class="flex items-center gap-5 pt-2 border-t border-neutral-800/80">
+                            <button onclick="likePost(${post.id})" class="flex items-center gap-1.5 text-neutral-400 hover:text-red-500 transition">
+                                <svg class="w-5 h-5 ${post.isLiked ? 'fill-red-500 text-red-500' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                <span class="text-xs ${post.isLiked ? 'text-red-500 font-bold' : ''}">${post.likes}</span>
+                            </button>
+                            <button onclick="openCommentModal(${post.id})" class="flex items-center gap-1.5 text-neutral-400 hover:text-white transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                <span class="text-xs">${post.comments.length}</span>
+                            </button>
+                            <button onclick="sharePost('${post.author}')" class="flex items-center gap-1.5 text-neutral-400 hover:text-white transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.367 3 3 0 000 5.367zm0 8.005a3 3 0 100-5.367 3 3 0 000 5.367z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function createNewPost() {
+            const text = document.getElementById('newPostText').value;
+            if(!text.trim()) return alert("Tuliskan sesuatu terlebih dahulu!");
+
+            const newPost = {
+                id: Date.now(),
+                author: currentActiveAccount,
+                username: currentActiveHandle,
+                badge: null,
+                time: "Baru saja",
+                content: text,
+                likes: 0,
+                isLiked: false,
+                comments: [],
+                isChallenge: false
+            };
+
+            try {
+                if (window.db && window.addDoc && window.collection) {
+                    await window.addDoc(window.collection(window.db, "posts"), newPost);
+                }
+                textPosts.unshift(newPost);
+                document.getElementById('newPostText').value = '';
+                renderFeed(textPosts);
+                alert("Postingan berhasil dikirim & disimpan ke Database Firebase!");
+            } catch (e) {
+                console.error("Gagal menyimpan ke database: ", e);
+                textPosts.unshift(newPost);
+                document.getElementById('newPostText').value = '';
+                renderFeed(textPosts);
+                alert("Postingan berhasil dikirim secara lokal.");
+            }
+        }
+
+        function likePost(id) {
+            const p = textPosts.find(x => x.id === id);
+            if(p) { p.isLiked = !p.isLiked; p.likes += p.isLiked ? 1 : -1; renderFeed(textPosts); }
+        }
+
+        function sharePost(author) { alert(`🔗 Tautan postingan milik ${author} telah disalin!`); }
+
+        function openCommentModal(id) {
+            activePostIdForComment = id;
+            renderComments();
+            document.getElementById('commentModal').classList.remove('hidden');
+        }
+        function closeCommentModal() { document.getElementById('commentModal').classList.add('hidden'); }
+        function renderComments() {
+            const p = textPosts.find(x => x.id === activePostIdForComment);
+            const container = document.getElementById('commentList');
+            container.innerHTML = p.comments.length ? p.comments.map(c => `
+                <div class="bg-black p-2.5 rounded-lg border border-neutral-800 text-xs">
+                    <span class="font-bold text-white">${c.author}</span>
+                    <p class="text-neutral-300 mt-0.5">${c.text}</p>
+                </div>
+            `).join('') : `<p class="text-xs text-neutral-500 text-center py-4">Belum ada komentar.</p>`;
+        }
+        function submitComment() {
+            const input = document.getElementById('commentInput');
+            if(!input.value.trim()) return;
+            textPosts.find(x => x.id === activePostIdForComment).comments.push({ author: currentActiveAccount, text: input.value });
+            input.value = '';
+            renderComments();
+            renderFeed(textPosts);
+        }
+
+        function openChallengeModal() { document.getElementById('challengeModal').classList.remove('hidden'); }
+        function closeChallengeModal() { document.getElementById('challengeModal').classList.add('hidden'); }
+
+        function submitChallengeFromProfile() {
+            const desc = document.getElementById('challengeInput').value;
+            const initVote = parseInt(document.getElementById('initialDonationInput').value) || 10000;
+
+            if(!desc) return alert("Isi deskripsi tantangan!");
+            if(initVote < 10000) return alert("⚠️ Minimal dukungan awal Rp 10.000!");
+            if(userBalance < initVote) return alert("⚠️ Saldo tidak cukup!");
+
+            userBalance -= initVote;
+            updateWalletUI();
+
+            profileChallenges.unshift({
+                id: Date.now(),
+                author: currentActiveAccount,
+                content: desc,
+                target: initVote * 2,
+                current: initVote,
+                votes: 1,
+                status: "PENDING_ACCEPT",
+                videoViews: 0,
+                videoUrl: null
+            });
+
+            closeChallengeModal();
+            renderProfileChallenges();
+            alert("Tantangan terkirim! Menunggu persetujuan & harga dari kreator.");
+        }
+
+        function openAcceptChallengeModal(id) {
+            activeChallengeIdForAccept = id;
+            document.getElementById('acceptChallengeText').innerText = profileChallenges.find(c => c.id === id).content;
+            document.getElementById('acceptChallengeModal').classList.remove('hidden');
+        }
+        function closeAcceptChallengeModal() { document.getElementById('acceptChallengeModal').classList.add('hidden'); }
+
+        function confirmAcceptChallenge() {
+            const priceTarget = parseInt(document.getElementById('creatorTargetPriceInput').value);
+            if(isNaN(priceTarget) || priceTarget <= 0) return alert("Tentukan target harga!");
+
+            const item = profileChallenges.find(c => c.id === activeChallengeIdForAccept);
+            if(item) {
+                item.status = "ACCEPTED";
+                item.target = priceTarget;
+
+                textPosts.unshift({
+                    id: Date.now(),
+                    author: item.author,
+                    username: currentActiveHandle,
+                    badge: null,
+                    time: "Baru saja",
+                    content: `🎯 Tantangan disetujui! "${item.content}" - Mari bantu vote sampai target tercapai!`,
+                    likes: 0,
+                    isLiked: false,
+                    comments: [],
+                    isChallenge: true,
+                    challengeId: item.id,
+                    challengeTarget: item.target,
+                    challengeCurrent: item.current
+                });
+
+                closeAcceptChallengeModal();
+                renderProfileChallenges();
+                switchTab('feed');
+                alert("✅ Tantangan diterima dan diposting ke Beranda!");
+            }
+        }
+
+        function openDonateModal(id) {
+            activeChallengeIdForDonation = id;
+            document.getElementById('donateChallengeTitle').innerText = `Tantangan: "${profileChallenges.find(c => c.id === id).content}"`;
+            document.getElementById('donateModal').classList.remove('hidden');
+        }
+        function closeDonateModal() { document.getElementById('donateModal').classList.add('hidden'); }
+
+        function processDonation() {
+            const amount = parseInt(document.getElementById('donateAmountInput').value);
+            if(amount < 1000 || userBalance < amount) return alert("Saldo tidak cukup atau nominal kurang!");
+
+            const item = profileChallenges.find(c => c.id === activeChallengeIdForDonation);
+            userBalance -= amount;
+            item.current += amount;
+            item.votes += Math.floor(amount / 1000);
+
+            const post = textPosts.find(p => p.challengeId === item.id);
+            if(post) post.challengeCurrent = item.current;
+
+            updateWalletUI();
+            if(item.current >= item.target) {
+                notifications.unshift({
+                    id: Date.now(),
+                    type: "system",
+                    text: `🚨 URGENT: Limit target dana "${item.content}" tercapai! Segera buat video bukti!`,
+                    time: "Baru saja"
+                });
+                alert("🎉 Target dana tercapai! Notifikasi pengingat harian dikirim.");
+            } else {
+                alert(`Berhasil mendukung sebesar ${formatIDR(amount)}!`);
+            }
+            closeDonateModal();
+            renderProfileChallenges();
+            renderFeed(textPosts);
+        }
+
+        function openUploadModal(id) { activeChallengeIdForUpload = id; document.getElementById('uploadModal').classList.remove('hidden'); }
+        function closeUploadModal() { document.getElementById('uploadModal').classList.add('hidden'); }
+
+        function submitVideoProof() {
+            const url = document.getElementById('videoUrlInput').value;
+            const item = profileChallenges.find(c => c.id === activeChallengeIdForUpload);
+            item.status = "COMPLETED";
+            item.videoUrl = url;
+            item.videoViews = 1;
+            creatorBalance += (item.current * 0.6);
+            document.getElementById('creatorBalance').innerText = formatIDR(creatorBalance);
+            closeUploadModal();
+            renderProfileChallenges();
+            alert("✅ Video terverifikasi & dana dicairkan (60:40)!");
+        }
+
+        function renderProfileChallenges() {
+            const container = document.getElementById('profileChallengeList');
+            container.innerHTML = profileChallenges.map(item => {
+                const percent = Math.min(100, Math.floor((item.current / item.target) * 100));
+                const isFunded = item.current >= item.target;
+
+                return `
+                    <div class="bg-neutral-900/60 border border-neutral-800 rounded-xl p-3.5 space-y-2 text-xs">
+                        <p class="font-semibold text-white">${item.content}</p>
+                        <div class="flex justify-between items-center text-[10px]">
+                            <span class="bg-neutral-800 text-white px-2 py-0.5 rounded-full font-bold">🗳️ ${item.votes} Votes</span>
+                            <span class="text-neutral-400">Target: <b>${formatIDR(item.target)}</b></span>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[11px]">
+                                <span class="text-neutral-400">Terkumpul: <b class="text-white">${formatIDR(item.current)}</b></span>
+                                <span class="font-mono text-[10px] text-neutral-400">${percent}%</span>
+                            </div>
+                            <div class="w-full bg-black h-2 rounded-full overflow-hidden border border-neutral-800">
+                                <div class="bg-white h-full transition-all" style="width: ${percent}%"></div>
+                            </div>
+                        </div>
+                        <div class="pt-1 flex gap-2">
+                            ${item.status === 'PENDING_ACCEPT' ? `
+                                <button onclick="openAcceptChallengeModal(${item.id})" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-1.5 rounded-lg">
+                                    📩 Terima Tantangan & Tentukan Harga
+                                </button>
+                            ` : item.status === 'COMPLETED' ? `
+                                <button onclick="watchVideo(${item.id})" class="w-full bg-white hover:bg-neutral-200 text-black font-bold py-1.5 rounded-lg">🎬 Tonton Video Bukti (${item.videoViews} Penonton) - Rp 1.000</button>
+                            ` : `
+                                <button onclick="openDonateModal(${item.id})" class="flex-1 bg-white hover:bg-neutral-200 text-black font-bold py-1.5 rounded-lg">🗳️ Dukung / Vote</button>
+                                ${isFunded ? `<button onclick="openUploadModal(${item.id})" class="bg-neutral-800 hover:bg-neutral-700 text-white font-bold px-3 py-1.5 rounded-lg border border-neutral-700">📤 Upload</button>` : `<button disabled class="bg-neutral-950 text-neutral-600 font-bold px-3 py-1.5 rounded-lg cursor-not-allowed border border-neutral-900">🔒 Terkunci</button>`}
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function watchVideo(id) {
+            if(userBalance < 1000) return alert("Saldo kurang dari Rp 1.000.");
+            if(confirm("Tonton video lengkap seharga Rp 1.000?")) {
+                userBalance -= 1000;
+                updateWalletUI();
+                const item = profileChallenges.find(c => c.id === id);
+                if(item) item.videoViews++;
+                window.open(item.videoUrl, '_blank');
+                renderProfileChallenges();
+            }
+        }
+
+        function switchMessageCategory(cat) { activeMessageCategory = cat; renderMessages(); }
+
+        function renderMessages() {
+            const container = document.getElementById('messageList');
+            const filtered = messagesData.filter(m => activeMessageCategory === 'main' ? m.isMutual : !m.isMutual);
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-neutral-500 text-center py-8">Tidak ada obrolan.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(m => `
+                <div class="bg-neutral-900/60 hover:bg-neutral-800 border border-neutral-800 rounded-xl p-3 flex items-center justify-between cursor-pointer transition select-none">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-full bg-neutral-800 border border-neutral-700 p-0.5 overflow-hidden flex-shrink-0">
+                            <img src="${m.avatar}" alt="${m.sender}" class="w-full h-full rounded-full object-cover">
+                        </div>
+                        <div>
+                            <span class="font-bold text-xs text-white block">${m.sender}</span>
+                            <p class="text-[11px] text-neutral-400 truncate max-w-[180px]">${m.lastMessage}</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-neutral-500">${m.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderRankList() {
+            const container = document.getElementById('rankList');
+            const completed = profileChallenges.filter(p => p.status === 'COMPLETED').sort((a,b) => b.videoViews - a.videoViews);
+            container.innerHTML = completed.length ? completed.map((item, idx) => `
+                <div class="bg-neutral-900 border border-neutral-800 rounded-xl p-3.5 flex items-center gap-3 text-xs">
+                    <span class="font-black text-base text-white w-6 text-center">#${idx+1}</span>
+                    <div class="flex-1 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-white">${item.author}</span>
+                            <span class="text-[10px] bg-neutral-800 text-white px-2 py-0.5 rounded-full font-bold">👁️ ${item.videoViews.toLocaleString('id-ID')} Penonton</span>
+                        </div>
+                        <p class="text-neutral-300">${item.content}</p>
+                    </div>
+                    <button onclick="watchVideo(${item.id})" class="bg-white hover:bg-neutral-200 text-black text-[11px] font-bold px-3 py-2 rounded-lg">Tonton</button>
+                </div>
+            `).join('') : `<p class="text-xs text-neutral-500 text-center py-6">Belum ada peringkat.</p>`;
+        }
+
+        renderFeed(textPosts);
+        updateWalletUI();
+    </script>
+</body>
+</html>
